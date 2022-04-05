@@ -180,8 +180,8 @@ openssl genrsa -out signature.pem 2048
 ***Extraction of the public key***
 
 ```bash
-openssl rsa -in signature.pem -pubout > public_signature.user1.pem
-cat public_signature.pub
+openssl rsa -in signature.pem -pubout > public_signature.pem
+cat public_signature.pem
 ```
 
 ***Creation of a new file with a size above 100 MB***
@@ -193,7 +193,7 @@ curl https://dl-cdn.alpinelinux.org/alpine/v3.15/releases/x86_64/alpine-standard
 ***Encryption of the new file***
 
 ```bash
-openssl rsautl -encrypt -inkey public_signature.user1.pem -pubin -in alpine.img -out secretAlpine.enc
+openssl rsautl -encrypt -inkey public_signature.pem -pubin -in alpine.img -out secretAlpine.enc
 ```
 
 ***Output***
@@ -207,3 +207,23 @@ openssl rsautl -encrypt -inkey public_signature.user1.pem -pubin -in alpine.img 
 
 ***
 
+## Part 5
+
+***Generate a 512 key pair***
+
+```bash
+openssl genrsa -out signature.pem 512
+```
+
+***Extract the public key***
+
+```bash
+openssl rsa -in signature.pem -pubout > public_signature.pem
+cat public_signature.pem
+```
+
+***Generate a random 256 key pair***
+
+```bash
+openssl genrsa -out random_signature.pem 256
+```
