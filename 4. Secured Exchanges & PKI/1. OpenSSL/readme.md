@@ -163,12 +163,47 @@ openssl rsautl -decrypt -inkey signature.pem -in secret.enc > secret_revealed.tx
 
 ***
 
-## Part 4
-
-
-
-***
-
 ***Help:***
 
 > https://opensource.com/article/21/4/encryption-decryption-openssl
+
+***
+
+## Part 4 - Encryption & data size 
+
+***Generate a 2048 key pair***
+
+```bash
+openssl genrsa -out signature.pem 2048
+```
+
+***Extraction of the public key***
+
+```bash
+openssl rsa -in signature.pem -pubout > public_signature.user1.pem
+cat public_signature.pub
+```
+
+***Creation of a new file with a size above 100 MB***
+
+```bash
+curl https://dl-cdn.alpinelinux.org/alpine/v3.15/releases/x86_64/alpine-standard-3.15.4-x86_64.iso -o alpine.img
+```
+
+***Encryption of the new file***
+
+```bash
+openssl rsautl -encrypt -inkey public_signature.user1.pem -pubin -in alpine.img -out secretAlpine.enc
+```
+
+***Output***
+
+> RSA operation error\
+> 139863429395776:error:0406D06E:rsa routines:RSA_padding_add_PKCS1_type_2:data too large for key size:
+
+***Explanation***
+
+> the size (number of bytes) of the input data should be smaller than the size (number bytes) of the modulus, which is also the RSA key size.
+
+***
+
