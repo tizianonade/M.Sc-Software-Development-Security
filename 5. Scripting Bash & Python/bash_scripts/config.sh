@@ -19,15 +19,16 @@
 #   $4: Address of the gateway
 #   $5: Address of DNS
 
-if [ $# -eq 1 ]
-then
-    #Task 1:
+#Function task 1
+change_hostname(){
     hostnamectl set-hostname $1
+}
 
-    #Task 2:
+#Function task 2
+check_interface_presence(){
 
     #Initialization
-    nb_interfaces=0
+    interface_presence=0
     i=0
 
     # Get the total number of interfaces (lo included)
@@ -39,24 +40,35 @@ then
         # 6 lignes in total & all interfaces names are located on a pair ligne
         if [ $[$[($i)%2]] -eq 0 ]
         then    
-            #Print out interfaces name without the ":" at the end
-            echo ${elmt:0:$[len-1]}
+            #Print out interfaces name without the last character ":" 
+            interface=${elmt:0:-1}
+
+            #Check presence of the interface
+            if [ "$1" = "$interface" ]
+            then
+                interface_presence=1
+            fi
         fi
         let i++
-    done 
+    done  
 
-    #echo $nb_interfaces
+    if [ $interface_presence -eq 1 ]
+    then
+        echo "$1 is present"
+    else
+        echo "$1 is not present"
+    fi
+}
+
+# Main
+if [ $# -eq 2 ]
+then
+    #Task 1:
+    change_hostname $1
     
-
-
-    #touch hello.txt
-    #update=$(ls)
-
-    #for elmt in $update
-    #do
-    #    echo $elmt >> hello.txt
-    #done
-
+    #Task 2:
+    check_interface_presence $2
+    
 else
     echo "5 arguments required"
     exit 1
