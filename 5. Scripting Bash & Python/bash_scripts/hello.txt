@@ -1,3 +1,0 @@
-config.sh
-hello.txt
-initial_config.sh

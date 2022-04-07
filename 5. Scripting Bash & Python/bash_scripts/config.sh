@@ -60,6 +60,12 @@ check_interface_presence(){
     fi
 }
 
+deactivate_card(){
+    deactivate=$(ip link set $1 down)
+    $deactivate
+    echo "Interface $1 is deactivated"
+}
+
 # Main
 if [ $# -eq 2 ]
 then
@@ -68,6 +74,9 @@ then
     
     #Task 2:
     check_interface_presence $2
+
+    #Task 3:
+    deactivate_card $2
     
 else
     echo "5 arguments required"
