@@ -251,4 +251,56 @@ openssl rsautl -verify -in sign.enc -pubin -inkey public.pem -out new_file.dgst
 
 ***
 
-## Part 3 - Certificates
+## Part 3 - Certificates X509
+
+***Creation of the certificate without passphrase***
+
+```bash
+openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem
+```
+
+***Creation of the certificate with passphrase***
+
+```bash
+openssl req -newkey rsa:2048 -keyout key.pem -x509 -days 365 -out certificate.pem
+```
+
+***Review the created certificate***
+
+```bash
+openssl x509 -text -noout -in certificate.pem
+```
+
+***Source***
+
+> https://www.ibm.com/docs/en/api-connect/2018.x?topic=overview-generating-self-signed-certificate-using-openssl
+
+***
+
+### CA.pl file
+
+***Locate the file***
+
+```bash
+dpkg -S CA.pl
+```
+
+>  Copy the file and paste into a new folder
+
+***Create a new authority of certification (CA)***
+
+```bash
+./CA.pl -newca
+```
+
+***Create a request of CA***
+
+```bash
+./CA.pl -newreq
+```
+
+***Sign the CA***
+
+```bash
+./CA.pl -sign
+```
