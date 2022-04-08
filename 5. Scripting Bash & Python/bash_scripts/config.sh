@@ -122,6 +122,11 @@ modify_address(){
 
 }
 
+activate_interface(){
+    #$1 name of the interface
+    sudo ip link set $1 up
+}
+
 # Main function
 if [ $# -eq 3 ]
 then
@@ -135,7 +140,10 @@ then
     #deactivate_card $2
 
     #Task 4:
-    modify_address $2 $3
+    #modify_address $2 $3
+
+    #Task 5:
+    activate_interface $2
     
 else
     echo "5 arguments required"
