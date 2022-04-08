@@ -134,6 +134,11 @@ modify_dns(){
     sed -i "s/nameserver .*/nameserver $1/" /etc/resolv.conf
 }
 
+test_net_config(){
+    ip a 
+    ping -c 4 8.8.8.8
+}
+
 # Main function
 if [ $# -le 5 ]
 then
@@ -154,6 +159,9 @@ then
 
     #Task 6: 
     modify_dns $5
+
+    #Task7:
+    test_net_config 
     
 else
     echo "5 arguments required"
