@@ -127,8 +127,15 @@ activate_interface(){
     sudo ip link set $1 up
 }
 
+modify_dns(){
+    #$1 new DNS address
+
+    # OLD : nameserver 127.0.0.0:53
+    sed -i "s/nameserver .*/nameserver $1/" /etc/resolv.conf
+}
+
 # Main function
-if [ $# -eq 3 ]
+if [ $# -le 5 ]
 then
     #Task 1:
     change_hostname $1
@@ -140,10 +147,13 @@ then
     #deactivate_card $2
 
     #Task 4:
-    #modify_address $2 $3
+    #modify_address $2 $3 $4
 
     #Task 5:
     activate_interface $2
+
+    #Task 6: 
+    modify_dns $5
     
 else
     echo "5 arguments required"
