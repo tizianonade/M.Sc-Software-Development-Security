@@ -1,2 +1,15 @@
 # M.Sc-Software Developement & Security
-Practical works : System administration - Virtualization
+
+## Content
+
+***System administration*** 
+
+***Virtualization***
+
+***Project - Traffic event using containers - IoT protocol***
+
+***OpenSSL***
+
+***PKI***
+
+***Scripting Bash & Python***
