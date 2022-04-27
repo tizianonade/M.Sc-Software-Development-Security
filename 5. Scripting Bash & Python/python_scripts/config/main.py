@@ -22,14 +22,27 @@
 """
 
 import sys
+import re
 from functions import *
-arguments = sys.argv
 
-if (len(arguments) - 1) <= 5:
+arguments = sys.argv
+NB_ARGUMENTS = 2
+
+if (len(arguments) - 1) == NB_ARGUMENTS:
+
     #Task 1:
-    change_hostname(arguments[1])
+    if arguments[1] and re.match("\w{1,10}",arguments[1]):
+        change_hostname(arguments[1])
+    else:
+        print("Error: first argument - string required (a-zA-Z0-9_) from 1 to 10 characters")
+        exit(1)
 
     #Task 2:
+    if arguments[2] and re.match("[a-z]{1,10}", arguments[2]):
+        check_interface(arguments[2])
+    else:
+        print("Error: second argument - string required (a-z) from 1 to 10 characters")
+        exit(1)
 
     #Task 3:
 
@@ -42,7 +55,7 @@ if (len(arguments) - 1) <= 5:
     #Task 7:
 
 else:
-    print("5 max arguments required")
+    print("{} max arguments required".format(NB_ARGUMENTS))
     exit(1)
         
 exit(0)
