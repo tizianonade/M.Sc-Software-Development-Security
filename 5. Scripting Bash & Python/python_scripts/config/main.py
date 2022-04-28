@@ -28,10 +28,11 @@ from task2 import check_interface
 from task3 import deactivate_interface
 from task4 import change_network_information
 from task5 import activate_interface
+from task6 import modify_dns
 
 
 arguments = sys.argv
-NB_ARGUMENTS = 4
+NB_ARGUMENTS = 5
 
 if (len(arguments) - 1) == NB_ARGUMENTS:
     
@@ -73,10 +74,16 @@ if (len(arguments) - 1) == NB_ARGUMENTS:
     if arguments[2] and re.match("[a-z]{1,10}", arguments[2]):
         activate_interface(arguments[2])
     else:
-        print("Error: first argument - string required (a-zA-Z0-9_) from 1 to 10 characters")
+        print("Error: second argument - string required (a-zA-Z0-9_) from 1 to 10 characters")
         exit(1)
 
     #Task 6:
+    print(arguments[5])
+    if arguments[5] and re.match("^[0-9]{2,3}(.[0-9]{1,3}){3}:([0-9]){2}$", arguments[5]):
+        modify_dns(arguments[5])
+    else:
+        print("Error: Fifth arguments - IPv4 address excepted + port number (x.x.x.x:x)")
+        exit(1)
 
     #Task 7:
 
