@@ -27,10 +27,11 @@ from task1 import change_hostname
 from task2 import check_interface
 from task3 import deactivate_interface
 from task4 import change_network_information
+from task5 import activate_interface
 
 
 arguments = sys.argv
-NB_ARGUMENTS = 3
+NB_ARGUMENTS = 4
 
 if (len(arguments) - 1) == NB_ARGUMENTS:
     
@@ -51,24 +52,29 @@ if (len(arguments) - 1) == NB_ARGUMENTS:
         exit(1)
 
     #Task 3:
-    if arguments[2] and re.match("[a-z]{1,10}", arguments[2]):
-        deactivate_interface(interfaceExist, arguments[2])
-    else:
-        print("Error: second argument - string required (a-z) from 1 to 10 characters")
-        exit(1)
+    # if arguments[2] and re.match("[a-z]{1,10}", arguments[2]):
+    #     deactivate_interface(interfaceExist, arguments[2])
+    # else:
+    #     print("Error: second argument - string required (a-z) from 1 to 10 characters")
+    #     exit(1)
 
     #Task 4:
-    if interfaceExist:
-        if arguments[3] and re.match("^[0-9]{2,3}(.[0-9]{1,3}){3}\/[0-9]{2}$", arguments[3]): #IPv4 address + net mask (10.0.2.17/24)
-            change_network_information(arguments[2], arguments[3])
-        else:
-            print("Error: third argument - IPv4 address + netmask excepted (x.x.x.x/net)")
-            exit(1)
-    else:
-        print("Error: Interface doesn't exist")
-        exit(1)
+    # if interfaceExist:
+    #     if arguments[3] and re.match("^[0-9]{2,3}(.[0-9]{1,3}){3}\/[0-9]{2}$", arguments[3]): #IPv4 address + net mask (10.0.2.17/24)
+    #         change_network_information(arguments[2], arguments[3])
+    #     else:
+    #         print("Error: third argument - IPv4 address + netmask excepted (x.x.x.x/net)")
+    #         exit(1)
+    # else:
+    #     print("Error: Interface doesn't exist")
+    #     exit(1)
 
     #Task 5:
+    if arguments[2] and re.match("[a-z]{1,10}", arguments[2]):
+        activate_interface(arguments[2])
+    else:
+        print("Error: first argument - string required (a-zA-Z0-9_) from 1 to 10 characters")
+        exit(1)
 
     #Task 6:
 
