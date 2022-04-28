@@ -29,6 +29,8 @@ arguments = sys.argv
 NB_ARGUMENTS = 2
 
 if (len(arguments) - 1) == NB_ARGUMENTS:
+    
+    interfaceExist = False
 
     #Task 1:
     if arguments[1] and re.match("\w{1,10}",arguments[1]):
@@ -37,15 +39,19 @@ if (len(arguments) - 1) == NB_ARGUMENTS:
         print("Error: first argument - string required (a-zA-Z0-9_) from 1 to 10 characters")
         exit(1)
 
-    #Task 2:
+    # #Task 2:
     if arguments[2] and re.match("[a-z]{1,10}", arguments[2]):
-        check_interface(arguments[2])
+        interfaceExist = check_interface(arguments[2])
     else:
         print("Error: second argument - string required (a-z) from 1 to 10 characters")
         exit(1)
 
     #Task 3:
-
+    if arguments[2] and re.match("[a-z]{1,10}", arguments[2]):
+        deactivate_interface(interfaceExist, arguments[2])
+    else:
+        print("Error: third argument - string required (a-z) from 1 to 10 characters")
+        exit(1)
     #Task 4:
 
     #Task 5:

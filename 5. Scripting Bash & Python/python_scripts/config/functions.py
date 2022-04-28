@@ -53,8 +53,7 @@ def check_interface(interfaceName):
     p_iplink = subprocess.run("ip link show | awk '{print $2'}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     
     if p_iplink.returncode == SUCCESS:
-        print(p_iplink.stdout)
-        
+       
         # print(p_iplink.stdout) - Output:
         #   lo:
         #   00:00:00:00:00:00
@@ -69,10 +68,10 @@ def check_interface(interfaceName):
 
         if interfaceName in interfacesPresent:
             print("Interface exist")
-            result = 1
+            result = True
         else:
             print("Interface doesn't exist")
-            result = 0
+            result = False
 
     else:
         print("Error: Command ip link not successful")
@@ -81,3 +80,18 @@ def check_interface(interfaceName):
         exit(1)
     
     return result
+
+# Task 3: Deactivate interface
+def deactivate_interface(interfaceExist, interfaceName):
+    SUCCESS = 0
+
+    if interfaceExist:
+        p_interfaceDown = subprocess.run("sudo ip link set " + interfaceName + " down", shell=True)
+        if p_interfaceDown.returncode == SUCCESS:
+            print("Interface {} is down".format(interfaceName))
+        else:
+            print("Error: interface still up")
+            exit(1)
+    else:
+        print("Error: Interface doesn't exist")
+        exit(1)
