@@ -3,9 +3,9 @@
 # Bash script that sets up execution environment of LXC containers
 # It installs all packages required to use LXC containers & bridges
 
-# Previous taks:
+# Tasks:
 #   1. update
-#   -- LXC --
+#   -- LXC -- NOT USEFUL 
 #   2. install lxc & lxctl lxc templates
 #   3. install additional packages and first container
 #   4. remove first container
@@ -23,25 +23,25 @@
 apt update
 
 #Task 2:
-apt-get -y install lxc lxctl lxc-templates
+# apt-get -y install lxc lxctl lxc-templates
 
-#Task 3:
-lxc-create -n ctn01 -t ubuntu
+# #Task 3:
+# lxc-create -n ctn01 -t ubuntu
 
-#Task 4:
-lxc-destroy -n ctn01
+# #Task 4:
+# lxc-destroy -n ctn01
 
 #Task 5: 
 apt-get -y install lxd
 
 #Task 6:
-lxc init --minimal
+lxd init --minimal
 
-#Task 7:
-lxc init ubuntu:20.04 ctn01
+# #Task 7:
+# lxc init ubuntu:20.04 ctn01
 
-#Task 8:
-lxc delete ctn01
+# #Task 8:
+# lxc delete ctn01
 
 #Task 9: 
 apt-get -y install bridge-utils
