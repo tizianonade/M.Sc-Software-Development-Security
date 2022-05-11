@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# Bash script that stop containers
+# Bash script that remove containers
 
 # Arguments given:
 #   $1: name of container or joker like "ctn*"
 
 # Tasks:
 #   1. check argument
-#   2. stop container(s) if containers found
+#   2. remove container(s) if containers found
 
-stop_cont(){
+remove_cont(){
     #$1: name of container or joker like "ctn*" 
  
     # Check if argument is string name of container or ctn*
@@ -37,15 +37,15 @@ stop_cont(){
                 container=$(echo $print_cont | awk '{print $'"$j"'}')  
             done
 
-            #stop container
+            #remove container
             for ctn in ${list_cont[*]}
             do 
                 firstThreeCharacters=${ctn::3}
 
                 #if container start with "ctn"
                 if [[ $firstThreeCharacters =~ ^"$cont_str"$ ]]; then
-                    #stop
-                    lxc stop $ctn
+                    #remove
+                    lxc delete $ctn
                 fi
             done 
         else
@@ -83,9 +83,9 @@ stop_cont(){
             fi
         done
         
-        # stop if container exist
+        # remove if container exist
         if [ $ctn_exist -eq 1 ]; then
-            lxc stop $1
+            lxc delete $1
         else
             echo "Error: Container not found"
             exit 1
@@ -102,7 +102,7 @@ if [ $# -ge 1 ]; then
 
     for var in $*
     do 
-        stop_cont $var
+        remove_cont $var
     done
 
 else
