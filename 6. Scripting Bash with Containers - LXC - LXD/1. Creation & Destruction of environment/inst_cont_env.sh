@@ -36,6 +36,8 @@ apt-get -y install lxd
 
 #Task 6:
 lxd init --minimal
+lxc image copy images:ubuntu/20.04 local: --alias ubuntu/20.04 --auto-update
+lxc image copy images:debian/11 local: --alias debian/11 --auto-update
 
 # #Task 7:
 # lxc init ubuntu:20.04 ctn01
