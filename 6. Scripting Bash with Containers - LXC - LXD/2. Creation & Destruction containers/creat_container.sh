@@ -36,10 +36,12 @@ presentation(){
     echo "*** Container created ***"
     echo "1. template: $1"
     echo "2. IPv4 address $2"
-    echo "3. memory: $3"
-    echo "4. CPU: $4"
+    echo "3. memory: $3 MiB"
+    echo "4. CPU: $4 core"
     echo "5. password ROOT: $5"
     echo "6. name of container: $6"
+    echo " - Linked to the LAN + NAT bridge: lxdbr0: dhcp4=true <-> eth0: dhcp4=true"
+    echo " - Linked to the LAN bridge: br0:192.168.10.1/24 <-> eth1: $2/24"
     echo "******************************"
     echo ""
 }
@@ -161,17 +163,34 @@ creation_container(){
     bridge_network="br0"
 
     # Check os
-    if [ $1 = "debian" ]; then
-        os="debian/11"   
-    else
+    if [ $1 = "ubuntu" ]; then
         os="ubuntu/20.04"
+    else
+        os="debian/11"
     fi
 
     lxc init images:$os $6 -c limits.cpu=$4 -c limits.memory=$memory_MiB
     lxc config device add $6 eth1 nic name=eth1 network=$bridge_network ipv4.address=$2
+    
+    echo "Sleep"
+    sleep 2
+    echo "lxc start $6"
+    echo "Started"
+
+    # #Add IPv4 address to the yaml file of the container
+    # if [ $1 = "ubuntu" ]; then
+    #     lxc exec -- cp /etc/netplan/10-lxc.yaml /etc/netplan/10-lxc.yaml.bak
+    #     lxc exec -- echo "    eth1:" >> /etc/netplan/10-lxc.yaml
+    #     lxc exec -- echo "      dhcp4: false" >> /etc/netplan/10-lxc.yaml
+    #     lxc exec -- echo "      addresses: ['$6'/24]" >> /etc/netplan/10-lxc.yaml
+    #     lxc exec -- netplan apply
+    # else
+    #     echo "else"
+    # fi 
+    
 
     ###***### => change password root
-}  
+}
 
 
 # Main function
@@ -229,7 +248,13 @@ if [ $# -eq $nb_arguments ]; then
     fi
 
 else
-    echo "Error: $nb_arguments arguments Required"
+    echo "Error: $nb_arguments arguments Required:" 
+    echo "1. template (ubuntu or debian)"
+    echo "2. IPv4 address (br0: 192.168.10.1)"
+    echo "3. memory "
+    echo "4. CPU "
+    echo "5. Password for ROOT"
+    echo "6. Name of container"
     exit 1
 fi
 
