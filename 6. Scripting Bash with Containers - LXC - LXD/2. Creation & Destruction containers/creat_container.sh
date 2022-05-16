@@ -2,6 +2,8 @@
 
 # Bash script that create LXC container
 
+# Location /var/snap/lxd/common/lxd/containers/containerName/rootfs
+
 # Arguments given:
 #   $1: template
 #   $2: IPv4 address
@@ -95,14 +97,14 @@ check_memory(){
     if [[ $1 =~ ^[0-9]{3,4}$ ]]; then 
         value_returned=0
     else
-        echo "Error: expected an integer for the memory 512 - 1024 -2048"
+        echo "Error: expected an integer for the memory 128 - 512 - 1024 -2048"
         exit 1
     fi
 
-    if [ $1 -eq 512 -o $1 -eq 1024 -o $1 -eq 2048 ]; then
+    if [ $1 -eq 128 -o $1 -eq 512 -o $1 -eq 1024 -o $1 -eq 2048 ]; then
         value_returned=0
     else
-        echo "Error: expected an integer for the memory 512 - 1024 -2048"
+        echo "Error: expected an integer for the memory 128 - 512 - 1024 -2048"
         exit 1
     fi
 
@@ -169,24 +171,39 @@ creation_container(){
         os="debian/11"
     fi
 
-    lxc init images:$os $6 -c limits.cpu=$4 -c limits.memory=$memory_MiB
+    #Creation container
+    lxc init $os $6 -c limits.cpu=$4 -c limits.memory=$memory_MiB
     lxc config device add $6 eth1 nic name=eth1 network=$bridge_network ipv4.address=$2
-    
-    echo "Sleep"
-    sleep 2
-    echo "lxc start $6"
-    echo "Started"
 
-    # #Add IPv4 address to the yaml file of the container
-    # if [ $1 = "ubuntu" ]; then
-    #     lxc exec -- cp /etc/netplan/10-lxc.yaml /etc/netplan/10-lxc.yaml.bak
-    #     lxc exec -- echo "    eth1:" >> /etc/netplan/10-lxc.yaml
-    #     lxc exec -- echo "      dhcp4: false" >> /etc/netplan/10-lxc.yaml
-    #     lxc exec -- echo "      addresses: ['$6'/24]" >> /etc/netplan/10-lxc.yaml
-    #     lxc exec -- netplan apply
-    # else
-    #     echo "else"
-    # fi 
+    #Add IPv4 address to the yaml file of the container
+    if [ $1 = "ubuntu" ]; then
+        
+        #Save default netplan file
+        sleep 1
+        path="/var/snap/lxd/common/lxd/containers/$6/rootfs/etc/netplan/"
+        cp $path/10-lxc.yaml $path/10-lxc.yaml.bak
+
+        # Add new device eth1 + address to netplan file
+        echo "    eth1:"  >> $path/10-lxc.yaml
+        echo "      dhcp4: false" >> $path/10-lxc.yaml
+        echo "      addresses: [$2/24]" >> $path/10-lxc.yaml
+
+        # Netplan apply
+        sleep 1
+        lxc start $6 
+        lxc exec $6 -- sudo netplan apply
+        lxc stop $6 
+    else
+
+        # Add new device eth1 + address to network file
+        sleep 1
+        path="/var/snap/lxd/common/lxd/containers/$6/rootfs/etc/systemd/network"
+        touch $path/eth1.network
+        echo "[Match]" > $path/eth1.network
+        echo "Name=eth1" >> $path/eth1.network
+        echo "[Network]" >> $path/eth1.network
+        echo "Address=$2/24" >> $path/eth1.network
+    fi 
     
 
     ###***### => change password root
