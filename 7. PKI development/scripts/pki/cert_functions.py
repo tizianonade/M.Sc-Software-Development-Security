@@ -50,21 +50,23 @@ def create_certificate(received):
     print("PKI: Certificate request received from {}!".format(received['ip']))
     p_check_request = subprocess.run("ls /home/pki/cert_requests/ | grep {}.csr".format(received['name']), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     if not(p_check_request.returncode == SUCCESS):
-        with open('/home/pki/cert_requests/gateway.csr','w') as fd :
+        with open("/home/pki/cert_requests/{}.csr".format(received['name']),'w') as fd :
             fd.write(received['data'])
             fd.close()
 
         #Create certificate
-        p_create_cert = subprocess.run("openssl x509 -req -in  \"/home/pki/cert_requests/gateway.csr\" -CA \"/home/pki/certificate/pki.crt\" -CAkey \"/home/pki/certificate/pki_key.pem\" -CAcreateserial -out \"/home/pki/certificate/gateway.crt\" -days 365", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p_create_cert = subprocess.run("openssl x509 -req -in  \"/home/pki/cert_requests/{}.csr\" -CA \"/home/pki/certificate/pki.crt\" -CAkey \"/home/pki/certificate/pki_key.pem\" -CAcreateserial -out \"/home/pki/certificate/{}.crt\" -days 365".format(received['name'],received['name']), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if p_create_cert.returncode == SUCCESS:
             print("PKI: Certificate created for {}!".format(received['ip']))
         else:
             print("PKI: Error creating certificate")
 
 def read_certificate(name):
-    p_read_cert = subprocess.run("cat /home/pki/certificate/{}".format(name), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    if p_read_cert.returncode == SUCCESS:
-        data = p_read_cert.stdout
+    data = ""
+    with open("/home/pki/certificate/{}".format(name),'r') as fd:
+        data = fd.read()
+        fd.close()
+
     return data[:-1]
    
 def response_certificate(received):
@@ -72,9 +74,9 @@ def response_certificate(received):
     create_certificate(received)
 
     #Connect to broker
-    client = connect_to_broker("pki","192.168.0.2")
+    client = connect_to_broker("pki",received['ip'])
 
     #Send certificate
     data = read_certificate(str(received['name'])+".crt")
-    send_cert_response(client,"cert_resp","pki","192.168.0.4", "/home/gateway/certificate",data)
+    send_cert_response(client,"cert_resp","pki","192.168.0.4", "/home/{}/certificate".format(received['name']),data)
     print("PKI: Certificate sent to {}!\n".format(received['ip']))
