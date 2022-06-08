@@ -1,51 +1,115 @@
 import subprocess
-from mqtt_functions import send_cert_request
+from mqtt_functions import *
 
 SUCCESS = 0
 
+# ************************** PART: managing creation of PKI *********************************
+
 def create_folder_certificate():
     #Create certificate folder if it doesn't exist
-    p_check_folder = subprocess.run("ls /home/gateway/ | grep certificate", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    p_check_folder = subprocess.run("ls /home/pki | grep certificate", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     if not(p_check_folder.returncode == SUCCESS):
-        p_create_folder = subprocess.run("mkdir -p /home/gateway/certificate/", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p_create_folder = subprocess.run("mkdir -p /home/pki/certificate/", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if p_create_folder.returncode == SUCCESS:
-            print("Gateway: Certificate folder created!")
+            print("PKI: Certificate folder created!")
+
+def create_folder_requests():
+    #Create request folder if it doesn't exist
+    p_check_folder = subprocess.run("ls /home/pki/ | grep cert_requests", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    if not(p_check_folder.returncode == SUCCESS):
+        p_create_folder = subprocess.run("mkdir -p /home/pki/cert_requests/", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        if p_create_folder.returncode == SUCCESS:
+            print("PKI: Request certificate folder created!")
 
 def create_key_pairs():
     #Create RSA key pair
-    p_check_key = subprocess.run("ls /home/gateway/certificate/ | grep gateway_key.pem", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    p_check_key = subprocess.run("ls /home/pki/certificate/ | grep pki_key.pem", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     if not(p_check_key.returncode == SUCCESS):
-        p_create_key = subprocess.run("openssl genrsa -out \"/home/gateway/certificate/gateway_key.pem\" 2048", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p_create_key = subprocess.run("openssl genrsa -out \"/home/pki/certificate/pki_key.pem\" 2048", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if p_create_key.returncode == SUCCESS:
-            print("Gateway: RSA key pair created!")
+            print("PKI: RSA private key created!")
 
-def create_cert_request():  
-    p_check_key = subprocess.run("ls /home/gateway/certificate/ | grep gateway.csr", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    p_check_key_pub = subprocess.run("ls /home/pki/certificate/ | grep \"pki_pub_key.pem\"", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    if not(p_check_key_pub.returncode == SUCCESS):
+        p_create_key_pub = subprocess.run("openssl rsa -in \"/home/pki/certificate/pki_key.pem\" -pubout -out \"/home/pki/certificate/pki_pub_key.pem\"", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        if p_create_key_pub.returncode == SUCCESS:
+            print("PKI: RSA public key created!")
+
+def create_root_certificate():
+    p_check_key = subprocess.run("ls /home/pki/certificate/ | grep pki.crt", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     if not(p_check_key.returncode == SUCCESS):
-        p_create_cert_req = subprocess.run("openssl req -new -key \"/home/gateway/certificate/gateway_key.pem\" -out \"/home/gateway/certificate/gateway.csr\" -subj \"/C=FR/ST=Paris/L=Paris/O=URCA/OU=MASTER RT/CN=gateway\"", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p_create_cert_req = subprocess.run("openssl req -x509 -days 365 -key \"/home/pki/certificate/pki_key.pem\" -out \"/home/pki/certificate/pki.crt\" -subj \"/C=FR/ST=Paris/L=Paris/O=URCA/OU=MASTER RT/CN=pki\"", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if p_create_cert_req.returncode == SUCCESS:
-            print("Gateway: Certificate request created!\n")
+            print("PKI: Root certificate created!\n")
 
-def get_cert_request():  
-    p_check_cert_req = subprocess.run("cat /home/gateway/certificate/gateway.csr", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    if p_check_cert_req.returncode == SUCCESS:
-        pass
-    return p_check_cert_req.stdout[:-1]
-
-def request_certificate(client):
+def build_pki():
     create_folder_certificate()
+    create_folder_requests()
     create_key_pairs()
-    create_cert_request()
-    cert_req = get_cert_request()
-    send_cert_request(client, "cert_req", "gateway", "192.168.0.2", "/home/pki/cert_requests",cert_req)
-    print("Gateway: Certificate request sent to 192.168.0.4!")
+    create_root_certificate()
 
-def save_certificate(received):
-    with open('/home/gateway/certificate/gateway.crt','w') as fd :
-        fd.write(received['data'])
+
+# ************************** PART: managing certificate response *********************************
+
+def create_certificate(received):
+    #Save file
+    print("PKI: Certificate request received from {} ({})!".format(received['name'],received['ip']))
+    p_check_request = subprocess.run("ls /home/pki/cert_requests/ | grep {}.csr".format(received['name']), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    if not(p_check_request.returncode == SUCCESS):
+
+        with open("/home/pki/cert_requests/{}.csr".format(received['name']),'w') as fd :
+            fd.write(received['data'])
+            fd.close()
+
+        #Create certificate
+        p_create_cert = subprocess.run("openssl x509 -req -in  \"/home/pki/cert_requests/{}.csr\" -CA \"/home/pki/certificate/pki.crt\" -CAkey \"/home/pki/certificate/pki_key.pem\" -CAcreateserial -out \"/home/pki/certificate/{}.crt\" -days 365".format(received['name'],received['name']), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        if p_create_cert.returncode == SUCCESS:
+            print("PKI: Certificate created for {}!".format(received['name']))
+        else:
+            print("PKI: Error creating certificate")
+  
+def read_certificate(name):
+    data = ""
+    with open("/home/pki/certificate/{}".format(name),'r') as fd:
+        data = fd.read()
         fd.close()
-        print("Gateway: Certificate received from {}!\n".format(received['ip']))
 
+    return data[:-1]
 
+def read_pki_pub_key():
+    data = ""
+    with open("/home/pki/certificate/pki_pub_key.pem",'r') as fd:
+        data = fd.read()
+        fd.close()
 
+    return data[:-1]
 
+def response_certificate(received):
+    #Create certificate
+    create_certificate(received)
+
+    #Connect to broker
+    client = connect_to_broker("pki",received['ip'])
+
+    # #Send certificate
+    user_cert = read_certificate(str(received['name'])+".crt")
+    pki_cert = read_certificate("pki.crt")
+    pki_pub_key = read_pki_pub_key()
+    send_cert_response(client,"cert_resp","pki","192.168.0.4", "/certificate", user_cert, pki_cert, pki_pub_key)
+    print("PKI: Certificate sent to {} ({})!\n".format(received['name'],received['ip']))
+
+# ************************** PART: managing msg response *********************************
+
+def response_msg(received):
+    print("Gateway: DENM message received from {} ({})!".format(received['name'],received['ip_s']))
+    #Connect to broker
+    client = connect_to_broker("gateway_msg",received['ip_d'])
+
+    #Send msg
+    send_msg_response(client, "msg_resp", received['name'], received['ip_d'], "192.168.0.4","/msg_responses",received['cert'], received['pub_key'], received['msg'])
+    name_dest = "v1"
+    if received['name'] == "v1":
+        name_dest = "v2"
+    print("Gateway: DENM message sent to {} ({})!\n".format(name_dest,received['ip_d']))
+    
+    

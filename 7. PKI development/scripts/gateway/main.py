@@ -1,28 +1,29 @@
 #!/bin/python3
 import threading
 import json
+import time
 from mqtt_functions import *
-from cert_functions import request_certificate, save_certificate
+from cert_functions import build_pki, response_certificate, response_msg
 
-
-def on_message_received(client, userdata, message):
+def on_cert_received(client, userdata, message):
     received = json.loads(str(message.payload.decode("utf-8")))
-    if received['code'] == 'cert_resp':
-        save_certificate(received)
+    if received["code"] == "cert_req":
+        response_certificate(received)
 
-#Send request to pki for getting certificate
+def on_msg_received(client, userdata, message):
+    received = json.loads(str(message.payload.decode("utf-8")))
+    if received["code"] == "msg_req":
+        response_msg(received)
+
 def main1():
-    #Connect to broker pki 
-    client = connect_to_broker("gateway","192.168.0.4")
-    #Send request a certificate to pki
-    request_certificate(client)
+    build_pki()
+    client = subscribe_to_broker("gateway1", "127.0.0.1", "/cert_requests")
+    client.on_message = on_cert_received
+    client.loop_forever()
 
-#Receive certificate
 def main2():
-    #Connect to broker gateway
-    client = subscribe_to_broker("gateway", "127.0.0.1", "/home/gateway/certificate")
-    #Thread role
-    client.on_message = on_message_received
+    client = subscribe_to_broker("gateway2", "127.0.0.1", "/msg_requests")
+    client.on_message = on_msg_received
     client.loop_forever()
 
 th1 = threading.Thread(target=main1)
