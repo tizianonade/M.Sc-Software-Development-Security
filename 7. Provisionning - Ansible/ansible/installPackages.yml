@@ -1,0 +1,16 @@
+---
+- name: Installation des packages necessaires à l'utilisation des conteneurs et à la création de bridge
+  hosts: lxc
+  remote_user: root
+  tasks:
+  - name: Installation lxc
+    apt: update_cache=yes
+    apt: name=lxc state=present
+
+  - name: Installation lxd
+    apt: update_cache=yes
+    apt: name=lxc state=present
+
+  - name: Installation bridge utils
+    apt: update_cache=yes
+    apt: name=bridge-utils state=present

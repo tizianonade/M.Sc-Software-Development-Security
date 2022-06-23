@@ -76,3 +76,34 @@ ssh-copy-id root@192.168.10.11
 ```Bash
 ansible lxc -m ping
 ```
+
+# Exercices Ansible
+
+## Question 1 install lxc ...
+
+```Bash
+vi packagesInstallation.yml
+```
+
+```Bash
+---
+- name: Installation of packages for clients
+  hosts: lxc
+  remote_user: root
+  tasks:
+  - name: Installation lxc
+    apt: update_cache=yes
+    apt: name=lxc state=present
+
+  - name: Installation lxd
+    apt: update_cache=yes
+    apt: name=lxc state=present
+
+  - name: Installation bridge utils
+    apt: update_cache=yes
+    apt: name=bridge-utils state=present
+```
+
+```Bash
+ ansible-playbook packagesInstallation.yml
+```
